@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph Edge["Edge"]
+        U[Operators<br/>NOC & Field Services] -->|HTTPS 443| NG[Nginx<br/>TLS termination<br/>reverse proxy]
+    end
+
+    subgraph Platform["Docker Compose — application stack"]
+        NG -->|HTTP / WebSocket| GW[Gunicorn<br/>WSGI workers]
+        GW --> APP[Flask 3.1<br/>12 route modules]
+        APP --> WK[Background worker<br/>job execution]
+        APP --> PG[(PostgreSQL 13<br/>operational data)]
+        APP --> RD[(Redis 7<br/>cache + Socket.IO broker)]
+        WK --> PG
+        WK --> RD
+    end
+
+    subgraph Integrations["Integrations"]
+        APP <-->|REST / webhooks| NOC[NOCiA / PRTG<br/>monitoring & alerts]
+        WK -->|SSH / Paramiko| NET[Radios & network devices]
+        APP <-->|local API| AI[Ollama<br/>AI copilot]
+    end

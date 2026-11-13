@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph Perimeter["Perimeter"]
+        FW[UFW<br/>default-deny inbound]
+        BAN[Fail2Ban<br/>brute-force mitigation]
+        NGX[Nginx<br/>TLS 1.2/1.3 + headers + rate limit]
+    end
+    subgraph Application["Application"]
+        APP[Gunicorn + Flask<br/>non-root container]
+    end
+    subgraph Data["Data"]
+        PG[(PostgreSQL 13)]
+        RD[(Redis 7)]
+    end
+    FW --> NGX
+    BAN -.->|bans offenders| FW
+    NGX --> APP
+    APP --> PG
+    APP --> RD

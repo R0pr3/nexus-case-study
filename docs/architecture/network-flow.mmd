@@ -1,0 +1,22 @@
+sequenceDiagram
+    autonumber
+    participant Op as NOC operator
+    participant App as Flask + Socket.IO
+    participant DB as PostgreSQL
+    participant Worker as Job worker
+    participant Dev as Radio / network device
+    participant Mon as PRTG / NOCiA
+
+    Op->>App: Create field activity / material request
+    App->>DB: Persist activity + audit record
+    App-->>Op: Real-time confirmation (Socket.IO)
+    Op->>App: Request device diagnostic
+    App->>DB: Persist job (queued)
+    App->>Worker: Dispatch job
+    Worker->>Dev: SSH session (allow-listed command)
+    Dev-->>Worker: Command output
+    Worker->>DB: Store job result
+    Worker-->>App: Publish status
+    App-->>Op: Live job update (Socket.IO)
+    Mon-->>App: Metrics & alerts (poll / webhook)
+    App->>DB: Store telemetry snapshot
